@@ -18,18 +18,24 @@ def toggle_editor():
         keyboard_button.config(state=tk.NORMAL)
         time_button.config(state=tk.NORMAL)
         apply_btn.config(state=tk.DISABLED)
+        clear_btn.config(state=tk.DISABLED)
     else:
         mouse_button.config(state=tk.DISABLED)
         keyboard_button.config(state=tk.DISABLED)
         time_button.config(state=tk.DISABLED)
         apply_btn.config(state=tk.NORMAL)
+        clear_btn.config(state=tk.NORMAL)
 
 def toggle_buttons():
     state = tk.NORMAL if checkbox_var.get() else tk.DISABLED
     debug_button.config(state=state)
 
 def performfunc():
-    for j in range(int(count.get())):
+    if count.get() == '':
+        st = 1
+    else:
+        st = int(count.get())
+    for j in range(st):
         for i in range(len(func)):
             if func[i][0] == 'MOUSE':
                 if func[i][1] == 'LMB':
@@ -112,6 +118,7 @@ def get_pos():
 def refresh():
     global editorfunc
     editorfunc = []
+    toggle_editor()
 def complete():
     global editorfunc
     func.append(editorfunc)
@@ -157,14 +164,14 @@ root.geometry('500x400')
 
 checkbox_var = tk.IntVar()
 editor_var = tk.IntVar()
-file_path = "none"
-
+file_path = "datafunc"
 
 
 
 
 
 #File
+
 
 title_file = tk.Label(root, text='Настройки файла')
 title_file.place(x=10, y=5)
@@ -211,7 +218,7 @@ title_editor = tk.Label(root, text='Редактор функций')
 title_editor.place(x=260, y=5)
 pos_btn = tk.Button(root, text='Записать координаты', width=32, command=get_pos)
 pos_btn.place(x=260,y=30)
-clear_btn = tk.Button(root, text='Отменить запись действия', width=32, command=refresh)
+clear_btn = tk.Button(root, text='Отменить запись действия', width=32, command=refresh, state=tk.DISABLED)
 clear_btn.place(x=260,y=82)
 apply_btn = tk.Button(root, text='Записать действие в функцию', width=32, command=complete, state=tk.DISABLED)
 apply_btn.place(x=260,y=56)
