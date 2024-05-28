@@ -12,41 +12,43 @@ posy = 0
 
 
 
+def toggle_editor():
+    if apply_btn['state'] == tk.NORMAL:
+        mouse_button.config(state=tk.NORMAL)
+        keyboard_button.config(state=tk.NORMAL)
+        time_button.config(state=tk.NORMAL)
+        apply_btn.config(state=tk.DISABLED)
+    else:
+        mouse_button.config(state=tk.DISABLED)
+        keyboard_button.config(state=tk.DISABLED)
+        time_button.config(state=tk.DISABLED)
+        apply_btn.config(state=tk.NORMAL)
+
 def toggle_buttons():
     state = tk.NORMAL if checkbox_var.get() else tk.DISABLED
     debug_button.config(state=state)
 
 def performfunc():
-    for i in range(len(func)):
-        if func[i][0] == 'MOUSE':
-            if func[i][1] == 'LMB':
-                pyautogui.click(x=int(func[i][2]), y=int(func[i][3]))
-            elif func[i][1] == 'RMB':
-                pyautogui.rightClick(x=int(func[i][2]), y=int(func[i][3]))
-            else:
-                messagebox.showerror("Perform Error", ("Unknown mouse button in line", i+1))
-
-        elif func[i][0] == 'KEYBOARD':
-            if func[i][1] == 'WRITE':
-                keyboard.write(func[i][2])
-            elif func[i][1] == 'PRESS':
-                keyboard.press(func[i][2])
-            elif func[i][1] == 'RELEASE':
-                keyboard.release(func[i][2])
-            else:
-                messagebox.showerror("Perform Error", ("Unknown key in line", i + 1))
-        elif func[i][0] == 'WAIT':
-            time.sleep(int(func[i][1]))
-
-
-root = tk.Tk()
-root.title("InputEngine v0.2.1")
-root.geometry('500x400')
-
-checkbox_var = tk.IntVar()
-file_path = "../datafunc.txt"
-
-
+    for j in range(int(count.get())):
+        for i in range(len(func)):
+            if func[i][0] == 'MOUSE':
+                if func[i][1] == 'LMB':
+                    pyautogui.click(x=int(func[i][2]), y=int(func[i][3]))
+                elif func[i][1] == 'RMB':
+                    pyautogui.rightClick(x=int(func[i][2]), y=int(func[i][3]))
+                else:
+                    messagebox.showerror("Perform Error", ("Unknown mouse button in line", i+1))
+            elif func[i][0] == 'KEYBOARD':
+                if func[i][1] == 'WRITE':
+                    keyboard.write(func[i][2])
+                elif func[i][1] == 'PRESS':
+                    keyboard.press(func[i][2])
+                elif func[i][1] == 'RELEASE':
+                    keyboard.release(func[i][2])
+                else:
+                    messagebox.showerror("Perform Error", ("Unknown key in line", i + 1))
+            elif func[i][0] == 'TIME':
+                time.sleep(int(func[i][1]))
 
 #File Functions
 
@@ -58,6 +60,8 @@ def save_matrix_to_file():
     except Exception as e:
         messagebox.showerror("Ошибка", f"Не удалось записать файл: {e}")
 def create_new_file():
+    global func, file_path
+    func = []
     new_file_name = new_name.get()
     if not new_file_name:
         messagebox.showerror("Ошибка", "Пожалуйста, введите имя файла.")
@@ -69,12 +73,14 @@ def create_new_file():
     except Exception as e:
         messagebox.showerror("Ошибка", f"Не удалось создать файл: {e}")
     name_file.config(text=new_name.get())
+    file_path = new_file_name
 
 def debug():
     print('Шаг: ', editorfunc)
     print('Функция: ', func)
     print('Файл:', file_path)
 def export():
+    global func,file_path
     func = []
     file_path = '../' + load_name.get() + '.txt'
     with open(file_path, "r", encoding="utf-8") as file:
@@ -85,6 +91,7 @@ def export():
             func.append(words)
     print(file_path, func)
     name_file.config(text=load_name.get())
+
 
 def get_pos():
     messagebox.showinfo("Получение координат", 'Вы'
@@ -109,6 +116,7 @@ def complete():
     global editorfunc
     func.append(editorfunc)
     editorfunc = []
+    toggle_editor()
 def mouseaction():
     selected = varmouse.get()
     if selected == optionsmouse[0]:
@@ -121,6 +129,36 @@ def mouseaction():
         editorfunc.append('RMB')
         editorfunc.append(str(posx))
         editorfunc.append(str(posy))
+    toggle_editor()
+def keyaction():
+    selected = varkeyboard.get()
+    if selected == optionskeyboard[0]:
+        editorfunc.append('KEYBOARD')
+        editorfunc.append('WRITE')
+        editorfunc.append(entry_key.get())
+    elif selected == optionskeyboard[1]:
+        editorfunc.append('KEYBOARD')
+        editorfunc.append('PRESS')
+        editorfunc.append(entry_key.get())
+    elif selected == optionskeyboard[2]:
+        editorfunc.append('KEYBOARD')
+        editorfunc.append('RELEASE')
+        editorfunc.append(entry_key.get())
+    toggle_editor()
+def timeaction():
+    editorfunc.append('TIME')
+    editorfunc.append(entry_time.get())
+    toggle_editor()
+
+
+root = tk.Tk()
+root.title("InputEngine v0.2.2")
+root.geometry('500x400')
+
+checkbox_var = tk.IntVar()
+editor_var = tk.IntVar()
+file_path = "none"
+
 
 
 
@@ -175,7 +213,7 @@ pos_btn = tk.Button(root, text='Записать координаты', width=32
 pos_btn.place(x=260,y=30)
 clear_btn = tk.Button(root, text='Отменить запись действия', width=32, command=refresh)
 clear_btn.place(x=260,y=82)
-apply_btn = tk.Button(root, text='Записать действие в функцию', width=32, command=complete)
+apply_btn = tk.Button(root, text='Записать действие в функцию', width=32, command=complete, state=tk.DISABLED)
 apply_btn.place(x=260,y=56)
 
 title_mouse = tk.Label(root, text='Действия с мышкой')
@@ -195,14 +233,16 @@ varkeyboard = tk.StringVar(root)
 varkeyboard.set(optionskeyboard[0])
 dropdownkeyboard = tk.OptionMenu(root,varkeyboard, *optionskeyboard,)
 dropdownkeyboard.place(x=260,y=210)
-keyboard_button = tk.Button(root, text='Действие клавиатурой', width=32,)
+keyboard_button = tk.Button(root, text='Действие клавиатурой', width=32, command=keyaction)
 keyboard_button.place(x=260,y=240)
+entry_key = tk.Entry(root, width=7)
+entry_key.place(x=440,y=216)
 
 title_time = tk.Label(root, text='Действия с паузами')
 title_time.place(x=260,y=270)
 entry_time = tk.Entry(root, width=38)
 entry_time.place(x=260,y=290)
-time_button = tk.Button(root, text='Добавить паузу', width=32)
+time_button = tk.Button(root, text='Добавить паузу', width=32, command=timeaction)
 time_button.place(x=260,y=310)
 
 #Other
